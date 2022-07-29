@@ -10,8 +10,7 @@ import (
 
 func main() {
 	config.LoadConfigApp()
-	fmt.Println("Running")
-	fmt.Println("Try to read a DB Uri: ", config.StringConnDb)
+	fmt.Println(fmt.Sprintf("Running in port: %d", config.Port))
 	r := router.CreateRouter()
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.Port), r))
 }
