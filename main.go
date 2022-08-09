@@ -1,16 +1,16 @@
 package main
 
 import (
-	"flightApi/src/config"
-	"flightApi/src/router"
 	"fmt"
-	"log"
-	"net/http"
+	"github.com/gofiber/fiber/v2"
+	"github.com/ribeirosaimon/go_flight_api/src/config"
+	"github.com/ribeirosaimon/go_flight_api/src/routers"
 )
 
 func main() {
-	config.LoadConfigApp()
-	fmt.Println(fmt.Sprintf("Running in port: %d", config.Port))
-	r := router.CreateRouter()
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.Port), r))
+	config.LoadConfig()
+	fmt.Println(config.StringConn)
+	app := fiber.New()
+	routers.ConfigRouter(app)
+	app.Listen(fmt.Sprintf(":%d", config.Port))
 }

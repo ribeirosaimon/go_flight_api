@@ -8,20 +8,19 @@ import (
 )
 
 var (
-	StringConnDb = ""
-	Port         = 0
+	StringConn = ""
+	Port       = 0
 )
 
-func LoadConfigApp() {
+func LoadConfig() {
 	var err error
-
 	if err = godotenv.Load(); err != nil {
 		log.Fatal(err)
 	}
 
-	Port, err = strconv.Atoi(os.Getenv("APP_PORT"))
+	Port, err = strconv.Atoi(os.Getenv("API_PORT"))
 	if err != nil {
-		log.Fatal(err)
+		Port = 9000
 	}
-	StringConnDb = os.Getenv("MONGO_URI")
+	StringConn = os.Getenv("MONGO_URI")
 }
