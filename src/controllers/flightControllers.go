@@ -1,8 +1,14 @@
 package controllers
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+	"github.com/ribeirosaimon/go_flight_api/src/repository"
+)
 
 func CreateFlight(c *fiber.Ctx) error {
-	_, err := c.Write([]byte("Tudo ok"))
-	return err
+	flights, err := repository.ReadFlights()
+	if err != nil {
+		return err
+	}
+	return c.JSON(flights)
 }
