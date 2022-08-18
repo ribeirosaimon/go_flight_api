@@ -6,10 +6,10 @@ import (
 )
 
 type Account struct {
-	ID        primitive.ObjectID `bson:"ID,omitempty"`
-	Name      string             `bson:"name"`
-	LastName  string             `bson:"lastName"`
-	Password  string             `bson:"password"`
-	CreatedAt time.Time          `bson:"createdAt"`
-	UpdatedAt time.Time          `bson:"updatedAt"`
+	ID        primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
+	Name      string             `json:"name" bson:"name"`
+	LastName  string             `json:"lastName" bson:"lastName"`
+	Password  string             `json:"password" bson:"password"`
+	CreatedAt time.Time          `json:"createdAt" bson:"createdAt"`
+	UpdatedAt time.Time          `json:"updatedAt" bson:"updatedAt"`
 }

@@ -22,7 +22,7 @@ func FindAll() ([]model.Account, error) {
 	defer cancelFunc()
 
 	filter := bson.D{{}}
-	allResults := []model.Account{}
+	var allResults []model.Account
 	client, err := config.GetMongoClient()
 	if err != nil {
 		return allResults, err
@@ -39,6 +39,7 @@ func FindAll() ([]model.Account, error) {
 		if err := cur.Decode(&account); err != nil {
 			return allResults, err
 		}
+
 		allResults = append(allResults, account)
 	}
 	cur.Close(ctx)
@@ -49,11 +50,12 @@ func FindAll() ([]model.Account, error) {
 }
 
 func FindById(id string) (model.Account, error) {
+	objectId, err := primitive.ObjectIDFromHex(id)
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancelFunc()
 
 	result := model.Account{}
-	filter := bson.D{primitive.E{Key: "_id", Value: id}}
+	filter := bson.D{primitive.E{Key: "_id", Value: objectId}}
 
 	client, err := config.GetMongoClient()
 	if err != nil {
@@ -85,18 +87,48 @@ func Save(account model.Account) error {
 }
 
 func Update(id string, account model.Account) (model.Account, error) {
+	objectId, err := primitive.ObjectIDFromHex(id)
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancelFunc()
-	account = model.Account{}
 
 	client, err := config.GetMongoClient()
 	if err != nil {
 		return account, err
 	}
 
-	filter := bson.D{primitive.E{Key: "_id", Value: id}}
-	//https://levelup.gitconnected.com/working-with-mongodb-using-golang-754ead0c10c
+	filter := bson.D{primitive.E{Key: "_id", Value: objectId}}
 	updater := bson.D{primitive.E{Key: "$set",
-		Value: bson.D{primitive.E{Key: "name", Value: account.Name}}}}
+		Value: bson.D{
+			primitive.E{Key: "name", Value: account.Name},
+			primitive.E{Key: "lastName", Value: account.LastName},
+			primitive.E{Key: "updatedAt", Value: time.Now()},
+		},
+	}}
 
+	collection := client.Database(config.DB).Collection(_ACCOUNTCONNECTION)
+	_, err = collection.UpdateOne(ctx, filter, updater)
+	if err != nil {
+		return account, err
+	}
+
+	return account, nil
+}
+
+func Delete(id string) error {
+	objectId, err := primitive.ObjectIDFromHex(id)
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancelFunc()
+	filter := bson.D{primitive.E{Key: "_id", Value: objectId}}
+
+	client, err := config.GetMongoClient()
+	if err != nil {
+		return err
+	}
+
+	collection := client.Database(config.DB).Collection(_ACCOUNTCONNECTION)
+	_, err = collection.DeleteOne(ctx, filter)
+	if err != nil {
+		return err
+	}
+	return nil
 }
