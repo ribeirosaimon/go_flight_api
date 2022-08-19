@@ -1,8 +1,7 @@
-package config
+package routes
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/ribeirosaimon/go_flight_api/src/routes"
 )
 
 type Route struct {
@@ -12,8 +11,8 @@ type Route struct {
 	Authenticated bool
 }
 
-func routersConfig(app *fiber.App) *fiber.App {
-	routers := routes.UserRouters
+func RoutersConfig(app *fiber.App) *fiber.App {
+	routers := UserRouters
 
 	for _, route := range routers {
 		app.Add(route.Method, route.URI, route.Function)

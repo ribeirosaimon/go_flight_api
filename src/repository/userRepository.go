@@ -2,11 +2,13 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"github.com/ribeirosaimon/go_flight_api/src/config"
 	"github.com/ribeirosaimon/go_flight_api/src/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
 
@@ -14,8 +16,6 @@ const (
 	_ACCOUNTCONNECTION = "account"
 	_TIMEOUTCONTEXT    = 2
 )
-
-//Todo Change all to interface{}
 
 func FindAll() ([]model.Account, error) {
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 2*time.Second)
@@ -40,7 +40,7 @@ func FindAll() ([]model.Account, error) {
 			return allResults, err
 		}
 
-		allResults = append(allResults, account)
+		allResults = append(allResults, account.SanitizerAccount())
 	}
 	cur.Close(ctx)
 	if len(allResults) == 0 {
@@ -66,34 +66,41 @@ func FindById(id string) (model.Account, error) {
 	if err := collection.FindOne(ctx, filter).Decode(&result); err != nil {
 		return result, err
 	}
-	return result, err
+	return result.SanitizerAccount(), err
 }
 
-func Save(account model.Account) error {
+//Save my Account in Repository and return this Account
+func Save(account model.Account) (model.Account, error) {
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancelFunc()
 
+	var newAccount = model.Account{}
 	client, err := config.GetMongoClient()
 	if err != nil {
-		return err
+		return newAccount, err
 	}
 
 	collection := client.Database(config.DB).Collection(_ACCOUNTCONNECTION)
-	_, err = collection.InsertOne(ctx, account)
+	resp, err := collection.InsertOne(ctx, account)
 	if err != nil {
-		return err
+		return newAccount, err
 	}
-	return nil
+
+	newAccount.ID = resp.InsertedID.(primitive.ObjectID)
+	newAccount.Name = account.Name
+	newAccount.LastName = account.LastName
+
+	return newAccount, nil
 }
 
-func Update(id string, account model.Account) (model.Account, error) {
+func Update(id string, account model.AccountDto) (model.Account, error) {
 	objectId, err := primitive.ObjectIDFromHex(id)
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancelFunc()
 
 	client, err := config.GetMongoClient()
 	if err != nil {
-		return account, err
+		return model.Account{}, err
 	}
 
 	filter := bson.D{primitive.E{Key: "_id", Value: objectId}}
@@ -101,17 +108,27 @@ func Update(id string, account model.Account) (model.Account, error) {
 		Value: bson.D{
 			primitive.E{Key: "name", Value: account.Name},
 			primitive.E{Key: "lastName", Value: account.LastName},
+			primitive.E{Key: "password", Value: account.Password},
 			primitive.E{Key: "updatedAt", Value: time.Now()},
 		},
 	}}
 
 	collection := client.Database(config.DB).Collection(_ACCOUNTCONNECTION)
-	_, err = collection.UpdateOne(ctx, filter, updater)
-	if err != nil {
-		return account, err
+
+	upsert := true
+	after := options.After
+	opt := options.FindOneAndUpdateOptions{
+		ReturnDocument: &after,
+		Upsert:         &upsert,
 	}
 
-	return account, nil
+	result := collection.FindOneAndUpdate(ctx, filter, updater, &opt)
+	if result.Err() != nil {
+		return model.Account{}, errors.New(err.Error())
+	}
+	var updatedAccount model.Account
+	decodeErr := result.Decode(&updatedAccount)
+	return updatedAccount.SanitizerAccount(), decodeErr
 }
 
 func Delete(id string) error {
