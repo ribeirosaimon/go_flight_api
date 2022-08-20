@@ -4,6 +4,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/ribeirosaimon/go_flight_api/src/model"
 	"github.com/ribeirosaimon/go_flight_api/src/repository"
+	"github.com/ribeirosaimon/go_flight_api/src/security"
 	"time"
 )
 
@@ -25,12 +26,13 @@ func SaveUserService(dto model.AccountDto) (model.Account, error) {
 	newAcc.Name = dto.Name
 	newAcc.LastName = dto.LastName
 	newAcc.Password = dto.Password
+	newAcc.Username = dto.Username
 	newAcc.CreatedAt = time.Now()
 	newAcc.UpdatedAt = time.Now()
 
 	savedAccount, err := repository.Save(newAcc)
 	if err != nil {
-		return newAcc, errors.New(_FIELD_ERROR_SAVE)
+		return newAcc, err
 	}
 
 	return savedAccount.SanitizerAccount(), nil
@@ -66,4 +68,25 @@ func DeleteUserService(id string) error {
 		return errors.New(err.Error())
 	}
 	return nil
+}
+
+func UserLogin(dto model.LoginDto) (model.UserAccessToken, error) {
+	var accessToken model.UserAccessToken
+	if dto.Username == "" {
+		return model.UserAccessToken{}, errors.New("Username can't be null")
+	}
+	account, err := repository.FindUserByUsername("admin")
+	if err != nil {
+		return model.UserAccessToken{}, err
+	}
+
+	if err := security.VerifyPassword(account.Password, dto.Password); err != nil {
+		return accessToken, err
+	}
+	token, err := security.CreateToken(account.ID.Hex())
+	if err != nil {
+		return accessToken, err
+	}
+	accessToken.Token = token
+	return accessToken, err
 }

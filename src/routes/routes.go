@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/ribeirosaimon/go_flight_api/src/middlewares"
 )
 
 type Route struct {
@@ -13,10 +14,15 @@ type Route struct {
 
 func RoutersConfig(app *fiber.App) *fiber.App {
 	routers := UserRouters
+	routers = append(routers, LoginRoute)
 
 	for _, route := range routers {
-		app.Add(route.Method, route.URI, route.Function)
+		apiHandlers := app.Group("/api")
+		if route.Authenticated {
+			apiHandlers.Add(route.Method, route.URI, middlewares.Authentication, route.Function)
+		} else {
+			apiHandlers.Add(route.Method, route.URI, route.Function)
+		}
 	}
-
 	return app
 }
