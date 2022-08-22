@@ -22,15 +22,15 @@ type LoginDto struct {
 type AccountDto struct {
 	Name     string `json:"name"`
 	LastName string `json:"lastName"`
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username,omitempty"`
+	Password string `json:"password,omitempty"`
 }
 
 type Account struct {
 	ID        primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
 	Name      string             `json:"name" bson:"name"`
 	LastName  string             `json:"lastName" bson:"lastName"`
-	Username  string             `json:"username" bson:"username"`
+	Username  string             `json:"username" bson:"username,omitempty"`
 	Password  string             `json:"password" bson:"password"`
 	CreatedAt time.Time          `json:"createdAt" bson:"createdAt"`
 	UpdatedAt time.Time          `json:"updatedAt" bson:"updatedAt"`

@@ -77,11 +77,11 @@ func UserLogin(dto model.LoginDto) (model.UserAccessToken, error) {
 	}
 	account, err := repository.FindUserByUsername("admin")
 	if err != nil {
-		return model.UserAccessToken{}, err
+		return model.UserAccessToken{}, errors.New("user not found")
 	}
 
 	if err := security.VerifyPassword(account.Password, dto.Password); err != nil {
-		return accessToken, err
+		return accessToken, errors.New("password as incorrect")
 	}
 	token, err := security.CreateToken(account.ID.Hex())
 	if err != nil {

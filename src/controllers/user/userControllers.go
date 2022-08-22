@@ -9,6 +9,7 @@ import (
 	"github.com/ribeirosaimon/go_flight_api/src/security"
 	"github.com/ribeirosaimon/go_flight_api/src/services"
 	"net/http"
+	"strings"
 )
 
 const (
@@ -21,6 +22,13 @@ func SaveUserController(c *fiber.Ctx) error {
 	var user model.AccountDto
 	if err := c.BodyParser(&user); err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: _ERRO_IN_BODY})
+	}
+	if strings.Contains(user.Username, " ") {
+		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: "your username contains space"})
+	}
+
+	if user.Username == "" {
+		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: "you need send username"})
 	}
 	encriptedPassword, err := security.EncriptyPassword(user.Password)
 	if err != nil {
@@ -58,6 +66,10 @@ func FindOneUserController(c *fiber.Ctx) error {
 
 func UpdateUserController(c *fiber.Ctx) error {
 	id := fmt.Sprint(c.Params("id"))
+	_, err := validateLoggedUser(c, id)
+	if err != nil {
+		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
+	}
 	var user model.AccountDto
 	if err := c.BodyParser(&user); err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: _ERRO_IN_BODY})
@@ -71,7 +83,11 @@ func UpdateUserController(c *fiber.Ctx) error {
 
 func DeleteUserController(c *fiber.Ctx) error {
 	id := fmt.Sprint(c.Params("id"))
-	err := services.DeleteUserService(id)
+	_, err := validateLoggedUser(c, id)
+	if err != nil {
+		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
+	}
+	err = services.DeleteUserService(id)
 	if err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: _NOT_FOUND_USER})
 	}
