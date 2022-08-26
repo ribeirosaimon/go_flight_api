@@ -5,6 +5,15 @@ import (
 	"time"
 )
 
+const (
+	USER  = "USER"
+	ADMIN = "ADMIN"
+)
+
+type Roles struct {
+	UserRoles []string `json:"user_roles"`
+}
+
 type LoggedUser struct {
 	Username string `json:"username"`
 	UserId   string `json:"userId"`

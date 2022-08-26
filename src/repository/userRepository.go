@@ -10,7 +10,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"reflect"
 	"time"
 )
 
@@ -130,34 +129,20 @@ func Update(id string, account model.AccountDto) (model.Account, error) {
 	filter := bson.D{primitive.E{Key: "_id", Value: objectId}}
 	itensForUpdate := bson.D{}
 
-	field := reflect.TypeOf(model.Account{}).NumField()
-	i := 0
-	for field != i {
-		indirect := reflect.Indirect(reflect.ValueOf(model.AccountDto{}))
-		structField := indirect.Type().Field(i).Name
-
-		i++
-		if structField != "" {
-			itensForUpdate = append(itensForUpdate, primitive.E{Key: structField, Value: ""})
-		}
+	if account.Name != "" {
+		itensForUpdate = append(itensForUpdate, primitive.E{Key: "name", Value: account.Name})
 	}
-
-	bsonUpdate := bson.D{primitive.E{
-		Key: "$set", Value: itensForUpdate,
-	}}
-	s
-	//updater := bson.D{primitive.E{Key: "$set", Value: bson.D{
-	//	primitive.E{Key: "name", Value: account.Name},
-	//	primitive.E{Key: "lastName", Value: account.LastName},
-	//	primitive.E{Key: "password", Value: account.Password},
-	//	primitive.E{Key: "username", Value: account.Username},
-	//	primitive.E{Key: "updatedAt", Value: time.Now()},
-	//},
-	//}}
+	if account.Username != "" {
+		itensForUpdate = append(itensForUpdate, primitive.E{Key: "username", Value: account.Username})
+	}
+	if account.LastName != "" {
+		itensForUpdate = append(itensForUpdate, primitive.E{Key: "lastName", Value: account.LastName})
+	}
+	itensForUpdate = append(itensForUpdate, primitive.E{Key: "updatedAt", Value: time.Now()})
 
 	collection := client.Database(config.DB).Collection(_ACCOUNTCONNECTION)
-
 	err = duplicatedUser(ctx, account.Username, collection)
+
 	if err != nil {
 		return model.Account{}, err
 	}
@@ -168,6 +153,10 @@ func Update(id string, account model.AccountDto) (model.Account, error) {
 		ReturnDocument: &after,
 		Upsert:         &upsert,
 	}
+
+	bsonUpdate := bson.D{primitive.E{
+		Key: "$set", Value: itensForUpdate,
+	}}
 
 	result := collection.FindOneAndUpdate(ctx, filter, bsonUpdate, &opt)
 	if result.Err() != nil {
