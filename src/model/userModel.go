@@ -10,13 +10,10 @@ const (
 	ADMIN = "ADMIN"
 )
 
-type Roles struct {
-	UserRoles []string `json:"user_roles"`
-}
-
 type LoggedUser struct {
-	Username string `json:"username"`
-	UserId   string `json:"userId"`
+	Username string   `json:"username"`
+	UserId   string   `json:"userId"`
+	Roles    []string `json:"roles"`
 }
 
 type UserAccessToken struct {
@@ -41,6 +38,7 @@ type Account struct {
 	LastName  string             `json:"lastName" bson:"lastName"`
 	Username  string             `json:"username" bson:"username,omitempty"`
 	Password  string             `json:"password" bson:"password"`
+	Roles     []string           `json:"roles" bson:"roles"`
 	CreatedAt time.Time          `json:"createdAt" bson:"createdAt"`
 	UpdatedAt time.Time          `json:"updatedAt" bson:"updatedAt"`
 }
@@ -51,6 +49,7 @@ func (a *Account) SanitizerAccount() Account {
 		a.LastName,
 		a.Username,
 		"",
+		a.Roles,
 		a.CreatedAt,
 		a.UpdatedAt,
 	}

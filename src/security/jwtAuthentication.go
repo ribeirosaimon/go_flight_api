@@ -23,11 +23,11 @@ func init() {
 	_SECRET_KEY = base64.StdEncoding.EncodeToString(key)
 }
 
-func CreateToken(userId string) (string, error) {
+func CreateToken(account model.Account) (string, error) {
 	permission := jwt.MapClaims{}
 	permission["authorized"] = true
 	permission["exp"] = time.Now().Add(time.Hour * 24).Unix()
-	permission["userId"] = userId
+	permission["userId"] = account.ID.Hex()
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, permission).SignedString([]byte(_SECRET_KEY))
 }
 
@@ -47,6 +47,7 @@ func ValidationToken(token string) (model.LoggedUser, error) {
 		return model.LoggedUser{
 			Username: userDb.Username,
 			UserId:   userDb.ID.Hex(),
+			Roles:    userDb.Roles,
 		}, nil
 	}
 

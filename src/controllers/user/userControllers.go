@@ -43,7 +43,6 @@ func SaveUserController(c *fiber.Ctx) error {
 }
 
 func FindAllController(c *fiber.Ctx) error {
-
 	user, err := services.FindAllUserService()
 	if err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})

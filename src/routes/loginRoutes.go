@@ -6,8 +6,9 @@ import (
 )
 
 var LoginRoute = Route{
-	URI:           "/login",
-	Method:        http.MethodGet,
-	Function:      login.ControllerLogin,
-	Authenticated: false,
+	URI:             "/login",
+	Method:          http.MethodGet,
+	Function:        login.ControllerLogin,
+	Authenticated:   false,
+	RoutePermission: []string{},
 }

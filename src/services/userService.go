@@ -10,7 +10,6 @@ import (
 
 const (
 	_FIELD_ERROR          = "field can be blank"
-	_FIELD_ERROR_SAVE     = "erro to save in repository"
 	_PASSWORD_FIELD_ERROR = "password need more 6 char"
 )
 
@@ -27,6 +26,8 @@ func SaveUserService(dto model.AccountDto) (model.Account, error) {
 	newAcc.LastName = dto.LastName
 	newAcc.Password = dto.Password
 	newAcc.Username = dto.Username
+
+	newAcc.Roles = append(newAcc.Roles, model.USER)
 	newAcc.CreatedAt = time.Now()
 	newAcc.UpdatedAt = time.Now()
 
@@ -83,7 +84,7 @@ func UserLogin(dto model.LoginDto) (model.UserAccessToken, error) {
 	if err := security.VerifyPassword(account.Password, dto.Password); err != nil {
 		return accessToken, errors.New("password as incorrect")
 	}
-	token, err := security.CreateToken(account.ID.Hex())
+	token, err := security.CreateToken(account)
 	if err != nil {
 		return accessToken, err
 	}

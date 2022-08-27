@@ -112,6 +112,7 @@ func Save(account model.Account) (model.Account, error) {
 	newAccount.Name = account.Name
 	newAccount.LastName = account.LastName
 	newAccount.Username = account.Username
+	newAccount.Roles = account.Roles
 
 	return newAccount, nil
 }
