@@ -1,49 +1,15 @@
 package routes
 
 import (
-	"fmt"
+	"github.com/gofiber/fiber/v2"
 	"github.com/ribeirosaimon/go_flight_api/src/controllers/user"
-	"github.com/ribeirosaimon/go_flight_api/src/model"
-	"net/http"
 )
 
-var _USERROUTER = "/user"
+func UserRoutes(apiHandlers fiber.Router) {
+	apiHandlers = apiHandlers.Group("/user")
 
-var UserRouters = []Route{
-	{
-		URI:             fmt.Sprint(_USERROUTER + "/"),
-		Method:          http.MethodGet,
-		Function:        user.FindAllController,
-		Authenticated:   true,
-		RoutePermission: []string{model.ADMIN},
-	},
-	{
-		URI:             fmt.Sprint(_USERROUTER + "/:id"),
-		Method:          http.MethodGet,
-		Function:        user.FindOneUserController,
-		Authenticated:   true,
-		RoutePermission: []string{model.USER, model.ADMIN},
-	},
-	{
-		URI:             fmt.Sprint(_USERROUTER + "/save"),
-		Method:          http.MethodPost,
-		Function:        user.SaveUserController,
-		Authenticated:   false,
-		RoutePermission: []string{model.USER, model.ADMIN},
-	},
-	{
-		URI:             fmt.Sprint(_USERROUTER + "/:id"),
-		Method:          http.MethodPut,
-		Function:        user.UpdateUserController,
-		Authenticated:   true,
-		RoutePermission: []string{model.USER, model.ADMIN},
-	},
-
-	{
-		URI:             fmt.Sprint(_USERROUTER + "/:id"),
-		Method:          http.MethodDelete,
-		Function:        user.DeleteUserController,
-		Authenticated:   true,
-		RoutePermission: []string{model.USER, model.ADMIN},
-	},
+	apiHandlers.Get("", AdminPermission, user.FindAllController)
+	apiHandlers.Get("/:id", UserPermission, user.FindOneUserController)
+	apiHandlers.Put("/:id", UserPermission, user.UpdateUserController)
+	apiHandlers.Delete("/:id", UserPermission, user.DeleteUserController)
 }
