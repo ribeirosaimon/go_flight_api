@@ -20,7 +20,7 @@ func AddApiRoutes(app *fiber.App) {
 
 	LoginRouter(apiHandlers)
 	UserRoutes(apiHandlers)
-	SwaggerRoutes(apiHandlers)
+	ConfigureApi(apiHandlers)
 
 }
 
