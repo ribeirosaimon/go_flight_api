@@ -15,8 +15,11 @@ import (
 
 const (
 	_ACCOUNTCONNECTION = "account"
-	_TIMEOUTCONTEXT    = 2
 )
+
+type Database struct {
+	context context.Context
+}
 
 func FindAll() ([]model.Account, error) {
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 2*time.Second)
