@@ -2,17 +2,19 @@ version: "3"
 
 services:
   flight_api:
-    build: .
+    build:
+      context: .
     ports:
-      - "4000:4000"
-    container_name: flight_api
+      - "4000:3000"
+    depends_on:
+      - mongodb
     volumes:
       - .:/go/src/
 
   mongodb:
     image: mongo
     ports:
-      - '7017:7017'
+      - '27018:27017'
     volumes:
       - "mongodb:/go/data"
 

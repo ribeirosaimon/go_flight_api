@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func ConfigApiUpController(ctx *fiber.Ctx) error {
+func ApiUppController(ctx *fiber.Ctx) error {
 	configApi := model.ConfigApiModel{
 		Read:        true,
 		CurrentTime: time.Now(),

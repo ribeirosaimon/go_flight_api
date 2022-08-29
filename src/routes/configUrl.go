@@ -8,5 +8,5 @@ import (
 
 func ConfigureApi(apiHandlers fiber.Router) {
 	apiHandlers.Get("/swagger/*", swagger.HandlerDefault)
-	apiHandlers.Get("/config", config.ConfigApiUpController)
+	apiHandlers.Get("/config", config.ApiUppController)
 }

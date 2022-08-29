@@ -12,7 +12,7 @@ var clientInstanceError error
 var mongoOnce sync.Once
 
 const (
-	CONNECTIONSTRING = "mongodb://localhost:27017"
+	CONNECTIONSTRING = "mongodb://mongodb:27017"
 	DB               = "flight_api_v1"
 )
 
