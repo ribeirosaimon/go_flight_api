@@ -17,7 +17,7 @@ const (
 	_ACCOUNTCONNECTION = "account"
 )
 
-type Database struct {
+type DatabaseContext struct {
 	context context.Context
 }
 
@@ -27,10 +27,7 @@ func FindAll() ([]model.Account, error) {
 
 	filter := bson.D{{}}
 	var allResults []model.Account
-	client, err := config.GetMongoClient()
-	if err != nil {
-		return allResults, err
-	}
+	client := config.GetMongoClient()
 	collection := client.Database(config.DB).Collection(_ACCOUNTCONNECTION)
 
 	cur, findError := collection.Find(ctx, filter)
@@ -61,10 +58,7 @@ func FindById(id string) (model.Account, error) {
 	result := model.Account{}
 	filter := bson.D{primitive.E{Key: "_id", Value: objectId}}
 
-	client, err := config.GetMongoClient()
-	if err != nil {
-		return result, err
-	}
+	client := config.GetMongoClient()
 	collection := client.Database(config.DB).Collection(_ACCOUNTCONNECTION)
 	if err := collection.FindOne(ctx, filter).Decode(&result); err != nil {
 		return result, err
@@ -79,9 +73,9 @@ func FindUserByUsername(username string) (model.Account, error) {
 	result := model.Account{}
 	filter := bson.D{primitive.E{Key: "username", Value: username}}
 
-	client, err := config.GetMongoClient()
+	client := config.GetMongoClient()
 	collection := client.Database(config.DB).Collection(_ACCOUNTCONNECTION)
-	err = collection.FindOne(ctx, filter).Decode(&result)
+	err := collection.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
 		return result, err
 	}
@@ -94,14 +88,11 @@ func Save(account model.Account) (model.Account, error) {
 	defer cancelFunc()
 
 	var newAccount = model.Account{}
-	client, err := config.GetMongoClient()
-	if err != nil {
-		return newAccount, err
-	}
+	client := config.GetMongoClient()
 
 	collection := client.Database(config.DB).Collection(_ACCOUNTCONNECTION)
 
-	err = duplicatedUser(ctx, account.Username, collection)
+	err := duplicatedUser(ctx, account.Username, collection)
 	if err != nil {
 		return model.Account{}, err
 	}
@@ -125,10 +116,7 @@ func Update(id string, account model.AccountDto) (model.Account, error) {
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancelFunc()
 
-	client, err := config.GetMongoClient()
-	if err != nil {
-		return model.Account{}, err
-	}
+	client := config.GetMongoClient()
 
 	filter := bson.D{primitive.E{Key: "_id", Value: objectId}}
 	itensForUpdate := bson.D{}
@@ -178,10 +166,7 @@ func Delete(id string) error {
 	defer cancelFunc()
 	filter := bson.D{primitive.E{Key: "_id", Value: objectId}}
 
-	client, err := config.GetMongoClient()
-	if err != nil {
-		return err
-	}
+	client := config.GetMongoClient()
 
 	collection := client.Database(config.DB).Collection(_ACCOUNTCONNECTION)
 	_, err = collection.DeleteOne(ctx, filter)

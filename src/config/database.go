@@ -12,23 +12,23 @@ var clientInstanceError error
 var mongoOnce sync.Once
 
 const (
-	CONNECTIONSTRING = "mongodb://mongodb:27017"
+	CONNECTIONSTRING = "mongodb://localhost:27017"
 	DB               = "flight_api_v1"
 )
 
 //GetMongoClient - Return mongodb connection to work with
-func GetMongoClient() (*mongo.Client, error) {
+func GetMongoClient() *mongo.Client {
 	mongoOnce.Do(func() {
 		clientOptions := options.Client().ApplyURI(CONNECTIONSTRING)
 		client, err := mongo.Connect(context.TODO(), clientOptions)
 		if err != nil {
-			clientInstanceError = err
+			panic(err)
 		}
 		err = client.Ping(context.TODO(), nil)
 		if err != nil {
-			clientInstanceError = err
+			panic(err)
 		}
 		clientInstance = client
 	})
-	return clientInstance, clientInstanceError
+	return clientInstance
 }
