@@ -2,24 +2,26 @@ package main
 
 import (
 	"context"
-	"github.com/ribeirosaimon/go_flight_api/src/config"
+	"fmt"
 	"github.com/ribeirosaimon/go_flight_api/src/model"
 	"github.com/ribeirosaimon/go_flight_api/src/repository"
-	"log"
 )
 
 func main() {
-	repo := repository.New(repository.Options{WriteMongo: config.GetMongoClient(), DatabaseName: config.DB, Collection: "account"})
+
 	var user = model.Account{
 		Name:     "teste",
 		LastName: "teste",
 		Password: "pass",
 	}
 
-	err := repo.User.Create(context.Background(), user)
+	mongoRepository := repository.NewMongoRepository()
+	save, err := mongoRepository.Account.Save(context.Background(), user)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
+	fmt.Println(save)
+
 	//app := fiber.New()
 	//app.Use(cors.New(cors.Config{
 	//	AllowOrigins: "*",

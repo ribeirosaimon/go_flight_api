@@ -8,7 +8,6 @@ import (
 )
 
 var clientInstance *mongo.Client
-var clientInstanceError error
 var mongoOnce sync.Once
 
 const (
@@ -17,7 +16,7 @@ const (
 )
 
 //GetMongoClient - Return mongodb connection to work with
-func GetMongoClient() *mongo.Client {
+func GetMongoClient(collection string) *mongo.Collection {
 	mongoOnce.Do(func() {
 		clientOptions := options.Client().ApplyURI(CONNECTIONSTRING)
 		client, err := mongo.Connect(context.TODO(), clientOptions)
@@ -30,5 +29,5 @@ func GetMongoClient() *mongo.Client {
 		}
 		clientInstance = client
 	})
-	return clientInstance
+	return clientInstance.Database(DB).Collection(collection)
 }

@@ -2,40 +2,56 @@ package repository
 
 import (
 	"context"
-	"fmt"
+	"github.com/ribeirosaimon/go_flight_api/src/config"
 	"github.com/ribeirosaimon/go_flight_api/src/model"
-	"github.com/ribeirosaimon/go_flight_api/src/repository/users"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type MongoRepo struct {
-	writer *mongo.Collection
+const _USER_COLLECTION = "account"
+
+type userRepository struct {
+	conn *mongo.Collection
 }
 
-func NewMongoRepository(writer *mongo.Database, collection string) users.UserRepository {
-	return &MongoRepo{writer: writer.Collection(collection)}
+func newUserRepository() *userRepository {
+	return &userRepository{conn: config.GetMongoClient(_USER_COLLECTION)}
 }
 
-func (m MongoRepo) Create(ctx context.Context, newUser model.Account) error {
-	one, err := m.writer.InsertOne(ctx, newUser)
+func (mongo userRepository) Save(ctx context.Context, account model.Account) (model.Account, error) {
+	one, err := mongo.conn.InsertOne(ctx, account)
+
+	account.ID = one.InsertedID.(primitive.ObjectID)
 	if err != nil {
-		return err
+		return model.Account{}, err
 	}
-	fmt.Println(one)
-	return nil
+
+	return account, nil
 }
 
-func (m MongoRepo) GetUserByEmail(ctx context.Context, email string) ([]model.Account, error) {
+func (mongo userRepository) FindById(ctx context.Context, ID string) (model.Account, error) {
+	result := model.Account{}
+	filter := bson.D{primitive.E{Key: "_id", Value: ID}}
+
+	if err := mongo.conn.FindOne(ctx, filter).Decode(&result); err != nil {
+		return result, err
+	}
+
+	return result, nil
+}
+
+func (mongo userRepository) FindAll(ctx context.Context) ([]model.Account, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (m MongoRepo) GetByID(ctx context.Context, ID int64) (*model.Account, error) {
+func (mongo userRepository) Update(ctx context.Context, ID string, account model.Account) (model.Account, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (m MongoRepo) GetAll(ctx context.Context) ([]model.Account, error) {
+func (mongo userRepository) Delete(ctx context.Context) error {
 	//TODO implement me
 	panic("implement me")
 }
