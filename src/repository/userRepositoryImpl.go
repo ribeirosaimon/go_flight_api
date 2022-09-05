@@ -41,17 +41,22 @@ func (mongo userRepository) FindById(ctx context.Context, ID string) (model.Acco
 	return result, nil
 }
 
+func (mongo userRepository) FindByUsername(ctx context.Context, username string) (model.Account, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (mongo userRepository) FindAll(ctx context.Context) ([]model.Account, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (mongo userRepository) Update(ctx context.Context, ID string, account model.Account) (model.Account, error) {
+func (mongo userRepository) Update(ctx context.Context, ID string, account model.AccountDto) (model.Account, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (mongo userRepository) Delete(ctx context.Context) error {
+func (mongo userRepository) Delete(ctx context.Context, ID string) error {
 	//TODO implement me
 	panic("implement me")
 }

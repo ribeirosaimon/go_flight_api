@@ -1,6 +1,7 @@
 package security
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
@@ -40,7 +41,8 @@ func ValidationToken(token string) (model.LoggedUser, error) {
 
 	if ok && parseToken.Valid {
 		userId := claims["userId"]
-		userDb, err := repository.FindById(fmt.Sprint(userId))
+		mongoRepository := repository.NewMongoRepository()
+		userDb, err := mongoRepository.Account.FindById(context.Background(), fmt.Sprint(userId))
 		if err != nil {
 			return model.LoggedUser{}, err
 		}

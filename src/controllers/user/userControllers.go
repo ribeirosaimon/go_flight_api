@@ -17,7 +17,7 @@ const (
 )
 
 func FindAllController(c *fiber.Ctx) error {
-	user, err := services.FindAllUserService()
+	user, err := services.UserService().FindAllUserService()
 	if err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
 	}
@@ -30,7 +30,7 @@ func FindOneUserController(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
 	}
-	user, err := services.FindOneUserService(id)
+	user, err := services.UserService().FindOneUserService(id)
 	if err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: _NOT_FOUND_USER})
 	}
@@ -47,7 +47,7 @@ func UpdateUserController(c *fiber.Ctx) error {
 	if err := c.BodyParser(&user); err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: _ERRO_IN_BODY})
 	}
-	updatedUser, err := services.UpdateUserService(id, user)
+	updatedUser, err := services.UserService().UpdateUserService(id, user)
 	if err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
 	}
@@ -60,7 +60,7 @@ func DeleteUserController(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
 	}
-	err = services.DeleteUserService(id)
+	err = services.UserService().DeleteUserService(id)
 	if err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: _NOT_FOUND_USER})
 	}

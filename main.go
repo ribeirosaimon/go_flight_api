@@ -1,38 +1,37 @@
 package main
 
 import (
-	"context"
-	"fmt"
-	"github.com/ribeirosaimon/go_flight_api/src/model"
-	"github.com/ribeirosaimon/go_flight_api/src/repository"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/ribeirosaimon/go_flight_api/src/routes"
 )
 
 func main() {
 
-	var user = model.Account{
-		Name:     "teste",
-		LastName: "teste",
-		Password: "pass",
-	}
-
-	mongoRepository := repository.NewMongoRepository()
-	save, err := mongoRepository.Account.Save(context.Background(), user)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(save)
-
-	//app := fiber.New()
-	//app.Use(cors.New(cors.Config{
-	//	AllowOrigins: "*",
-	//	AllowHeaders: "Origin, Content-Type, Accept",
-	//}))
-	//
-	//routes.AddApiRoutes(app)
-	//
-	//err := app.Listen(":3000")
-	//if err != nil {
-	//	return
+	//var user = model.AccountDto{
+	//	Name:     "teste",
+	//	LastName: "teste",
+	//	Password: "pass",
 	//}
+	//
+	//service := services.UserService()
+	//account, err := service.SaveOneAccount(user)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//fmt.Println(account)
+
+	app := fiber.New()
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowHeaders: "Origin, Content-Type, Accept",
+	}))
+
+	routes.AddApiRoutes(app)
+
+	err := app.Listen(":4000")
+	if err != nil {
+		return
+	}
 
 }
