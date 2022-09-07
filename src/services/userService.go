@@ -11,18 +11,7 @@ import (
 
 const contextTime = 2
 
-type userService struct {
-	ctx    context.Context
-	cancel context.CancelFunc
-}
-
-func UserService() userService {
-	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*contextTime)
-	return userService{ctx: ctx, cancel: cancelFunc}
-}
-
-func (u userService) SaveOneAccount(account model.AccountDto) (model.Account, error) {
-	defer u.cancel()
+func SaveOneAccount(account model.AccountDto) (model.Account, error) {
 	var newAcc model.Account
 
 	if account.Name == "" {
@@ -32,70 +21,70 @@ func (u userService) SaveOneAccount(account model.AccountDto) (model.Account, er
 		return newAcc, errors.New("You need send Password")
 	}
 
-	password, err := security.EncriptyPassword(account.Password)
-	if err != nil {
-		return newAcc, errors.New("Error to encrypt password")
-	}
-
 	newAcc.Name = account.Name
 	newAcc.LastName = account.LastName
 	newAcc.Username = account.Username
-	newAcc.Password = string(password)
+	newAcc.Password = account.Password
 	newAcc.CreatedAt = time.Now()
 	newAcc.UpdatedAt = time.Now()
 	newAcc.Roles = []string{model.USER}
-	mongoRepository := repository.NewMongoRepository()
 
-	return mongoRepository.Account.Save(u.ctx, newAcc)
+	return repository.NewMongoRepository().Account.Save(context.Background(), newAcc)
 
 }
 
-func (u userService) FindAllUserService() ([]model.Account, error) {
-	all, err := repository.NewMongoRepository().Account.FindAll(u.ctx)
+func FindAllUserService() ([]model.Account, error) {
+
+	all, err := repository.NewMongoRepository().Account.FindAll(context.Background())
 	if err != nil {
 		return []model.Account{}, err
 	}
 	return all, nil
 }
 
-func (u userService) FindOneUserService(id string) (model.Account, error) {
-	byId, err := repository.NewMongoRepository().Account.FindById(u.ctx, id)
+func FindOneUserService(id string) (model.Account, error) {
+
+	byId, err := repository.NewMongoRepository().Account.FindById(context.Background(), id)
 	if err != nil {
 		return model.Account{}, errors.New(err.Error())
 	}
 	return byId, nil
 }
 
-func (u userService) UpdateUserService(id string, dto model.AccountDto) (model.Account, error) {
-	update, err := repository.NewMongoRepository().Account.Update(u.ctx, id, dto)
+func UpdateUserService(id string, dto model.AccountDto) (model.Account, error) {
+	update, err := repository.NewMongoRepository().Account.Update(context.Background(), id, dto)
 	if err != nil {
 		return model.Account{}, errors.New(err.Error())
 	}
 	return update, err
 }
 
-func (u userService) DeleteUserService(id string) error {
-	err := repository.NewMongoRepository().Account.Delete(u.ctx, id)
+func DeleteUserService(id string) error {
+
+	err := repository.NewMongoRepository().Account.Delete(context.Background(), id)
 	if err != nil {
 		return errors.New(err.Error())
 	}
 	return nil
 }
 
-func (u userService) UserLogin(dto model.LoginDto) (model.UserAccessToken, error) {
-	defer u.cancel()
+func UserLogin(dto model.LoginDto) (model.UserAccessToken, error) {
 	var accessToken model.UserAccessToken
 
 	if dto.Username == "" {
 		return model.UserAccessToken{}, errors.New("Username can't be null")
 	}
-	account, err := repository.NewMongoRepository().Account.FindByUsername(u.ctx, dto.Username)
+	account, err := repository.NewMongoRepository().Account.FindByUsername(context.Background(), dto.Username)
 	if err != nil {
-		return model.UserAccessToken{}, errors.New("user not found")
+		return model.UserAccessToken{}, err
+	}
+
+	if err != nil {
+		panic(err)
 	}
 
 	if err := security.VerifyPassword(account.Password, dto.Password); err != nil {
-		return accessToken, errors.New("password as incorrect")
+		return accessToken, err
 	}
 	token, err := security.CreateToken(account)
 	if err != nil {

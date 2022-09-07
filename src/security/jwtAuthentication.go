@@ -41,8 +41,8 @@ func ValidationToken(token string) (model.LoggedUser, error) {
 
 	if ok && parseToken.Valid {
 		userId := claims["userId"]
-		mongoRepository := repository.NewMongoRepository()
-		userDb, err := mongoRepository.Account.FindById(context.Background(), fmt.Sprint(userId))
+
+		userDb, err := repository.NewMongoRepository().Account.FindById(context.Background(), fmt.Sprint(userId))
 		if err != nil {
 			return model.LoggedUser{}, err
 		}

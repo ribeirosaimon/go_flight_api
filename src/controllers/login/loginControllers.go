@@ -19,7 +19,7 @@ func ControllerLogin(c *fiber.Ctx) error {
 	if err := c.BodyParser(&user); err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: _BODY_LOGIN_ERROR})
 	}
-	accessToken, err := services.UserService().UserLogin(user)
+	accessToken, err := services.UserLogin(user)
 	if err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
 	}
@@ -43,9 +43,9 @@ func SignUp(c *fiber.Ctx) error {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
 	}
 	user.Password = string(encriptedPassword)
-	save, err := services.UserService().SaveOneAccount(user)
+	save, err := services.SaveOneAccount(user)
 	if err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
 	}
-	return c.Status(http.StatusCreated).JSON(save)
+	return c.Status(http.StatusCreated).JSON(save.SanitizerAccount())
 }
