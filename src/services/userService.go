@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"github.com/pkg/errors"
 	"github.com/ribeirosaimon/go_flight_api/src/model"
 	"github.com/ribeirosaimon/go_flight_api/src/repository"
@@ -8,47 +9,40 @@ import (
 	"time"
 )
 
-const (
-	_FIELD_ERROR          = "field can be blank"
-	_PASSWORD_FIELD_ERROR = "password need more 6 char"
-)
+func SaveOneAccount(account model.AccountDto) (model.Account, error) {
+	var newAcc model.Account
 
-func SaveUserService(dto model.AccountDto) (model.Account, error) {
-	var newAcc = model.Account{}
-	if dto.Name == "" {
-		return newAcc, errors.New(_FIELD_ERROR)
+	if account.Name == "" {
+		return newAcc, errors.New("You need send Name")
 	}
-	if len(dto.Password) < 6 {
-		return newAcc, errors.New(_PASSWORD_FIELD_ERROR)
+	if account.Password == "" {
+		return newAcc, errors.New("You need send Password")
 	}
 
-	newAcc.Name = dto.Name
-	newAcc.LastName = dto.LastName
-	newAcc.Password = dto.Password
-	newAcc.Username = dto.Username
-
-	newAcc.Roles = append(newAcc.Roles, model.USER)
+	newAcc.Name = account.Name
+	newAcc.LastName = account.LastName
+	newAcc.Username = account.Username
+	newAcc.Password = account.Password
 	newAcc.CreatedAt = time.Now()
 	newAcc.UpdatedAt = time.Now()
+	newAcc.Roles = []string{model.USER}
 
-	savedAccount, err := repository.Save(newAcc)
-	if err != nil {
-		return newAcc, err
-	}
+	return repository.NewMongoRepository().Account.Save(context.Background(), newAcc)
 
-	return savedAccount.SanitizerAccount(), nil
 }
 
 func FindAllUserService() ([]model.Account, error) {
-	all, err := repository.FindAll()
+
+	all, err := repository.NewMongoRepository().Account.FindAll(context.Background())
 	if err != nil {
-		return []model.Account{}, errors.New(err.Error())
+		return []model.Account{}, err
 	}
 	return all, nil
 }
 
 func FindOneUserService(id string) (model.Account, error) {
-	byId, err := repository.FindById(id)
+
+	byId, err := repository.NewMongoRepository().Account.FindById(context.Background(), id)
 	if err != nil {
 		return model.Account{}, errors.New(err.Error())
 	}
@@ -56,7 +50,7 @@ func FindOneUserService(id string) (model.Account, error) {
 }
 
 func UpdateUserService(id string, dto model.AccountDto) (model.Account, error) {
-	update, err := repository.Update(id, dto)
+	update, err := repository.NewMongoRepository().Account.Update(context.Background(), id, dto)
 	if err != nil {
 		return model.Account{}, errors.New(err.Error())
 	}
@@ -64,7 +58,8 @@ func UpdateUserService(id string, dto model.AccountDto) (model.Account, error) {
 }
 
 func DeleteUserService(id string) error {
-	err := repository.Delete(id)
+
+	err := repository.NewMongoRepository().Account.Delete(context.Background(), id)
 	if err != nil {
 		return errors.New(err.Error())
 	}
@@ -73,16 +68,21 @@ func DeleteUserService(id string) error {
 
 func UserLogin(dto model.LoginDto) (model.UserAccessToken, error) {
 	var accessToken model.UserAccessToken
+
 	if dto.Username == "" {
 		return model.UserAccessToken{}, errors.New("Username can't be null")
 	}
-	account, err := repository.FindUserByUsername("admin")
+	account, err := repository.NewMongoRepository().Account.FindByUsername(context.Background(), dto.Username)
 	if err != nil {
-		return model.UserAccessToken{}, errors.New("user not found")
+		return model.UserAccessToken{}, err
+	}
+
+	if err != nil {
+		panic(err)
 	}
 
 	if err := security.VerifyPassword(account.Password, dto.Password); err != nil {
-		return accessToken, errors.New("password as incorrect")
+		return accessToken, err
 	}
 	token, err := security.CreateToken(account)
 	if err != nil {

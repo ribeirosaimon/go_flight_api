@@ -11,7 +11,6 @@ import (
 )
 
 const (
-	_ERRO_SAVE_USER = "error in save User"
 	_ERRO_IN_BODY   = "error in your body"
 	_NOT_FOUND_USER = "user not found"
 )
@@ -34,7 +33,7 @@ func FindOneUserController(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: _NOT_FOUND_USER})
 	}
-	return c.Status(http.StatusOK).JSON(user)
+	return c.Status(http.StatusOK).JSON(user.SanitizerAccount())
 }
 
 func UpdateUserController(c *fiber.Ctx) error {
@@ -51,7 +50,7 @@ func UpdateUserController(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
 	}
-	return c.Status(http.StatusOK).JSON(updatedUser)
+	return c.Status(http.StatusOK).JSON(updatedUser.SanitizerAccount())
 }
 
 func DeleteUserController(c *fiber.Ctx) error {

@@ -43,9 +43,9 @@ func SignUp(c *fiber.Ctx) error {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
 	}
 	user.Password = string(encriptedPassword)
-	save, err := services.SaveUserService(user)
+	save, err := services.SaveOneAccount(user)
 	if err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
 	}
-	return c.Status(http.StatusCreated).JSON(save)
+	return c.Status(http.StatusCreated).JSON(save.SanitizerAccount())
 }
