@@ -11,7 +11,6 @@ import (
 )
 
 const (
-	_ERRO_SAVE_USER = "error in save User"
 	_ERRO_IN_BODY   = "error in your body"
 	_NOT_FOUND_USER = "user not found"
 )

@@ -9,8 +9,6 @@ import (
 	"time"
 )
 
-const contextTime = 2
-
 func SaveOneAccount(account model.AccountDto) (model.Account, error) {
 	var newAcc model.Account
 
