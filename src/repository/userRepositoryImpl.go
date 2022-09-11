@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/ribeirosaimon/go_flight_api/src/config"
 	"github.com/ribeirosaimon/go_flight_api/src/model"
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,15 +13,15 @@ import (
 
 const _USER_COLLECTION = "account"
 
-type userRepository struct {
+type AccountRepositoryImpl struct {
 	conn *mongo.Collection
 }
 
-func newUserRepository() *userRepository {
-	return &userRepository{conn: config.GetMongoClient(_USER_COLLECTION)}
+func UserRepository() AccountRepositoryImpl {
+	return AccountRepositoryImpl{conn: config.GetMongoClient(_USER_COLLECTION)}
 }
 
-func (mongo userRepository) Save(ctx context.Context, account model.Account) (model.Account, error) {
+func (mongo AccountRepositoryImpl) Save(ctx context.Context, account model.Account) (model.Account, error) {
 	err := mongo.isDuplicateUser(ctx, account.Username)
 	if err != nil {
 		return model.Account{}, err
@@ -38,7 +37,7 @@ func (mongo userRepository) Save(ctx context.Context, account model.Account) (mo
 	return account, nil
 }
 
-func (mongo userRepository) FindById(ctx context.Context, ID string) (model.Account, error) {
+func (mongo AccountRepositoryImpl) FindById(ctx context.Context, ID string) (model.Account, error) {
 	result := model.Account{}
 	objectId, err := primitive.ObjectIDFromHex(ID)
 	if err != nil {
@@ -53,7 +52,7 @@ func (mongo userRepository) FindById(ctx context.Context, ID string) (model.Acco
 	return result, nil
 }
 
-func (mongo userRepository) FindByUsername(ctx context.Context, username string) (model.Account, error) {
+func (mongo AccountRepositoryImpl) FindByUsername(ctx context.Context, username string) (model.Account, error) {
 	result := model.Account{}
 	filter := bson.D{primitive.E{Key: "username", Value: username}}
 
@@ -64,7 +63,7 @@ func (mongo userRepository) FindByUsername(ctx context.Context, username string)
 	return result, nil
 }
 
-func (mongo userRepository) FindAll(ctx context.Context) ([]model.Account, error) {
+func (mongo AccountRepositoryImpl) FindAll(ctx context.Context) ([]model.Account, error) {
 	var allResults []model.Account
 
 	find, err := mongo.conn.Find(ctx, bson.D{{}})
@@ -85,28 +84,8 @@ func (mongo userRepository) FindAll(ctx context.Context) ([]model.Account, error
 	return allResults, nil
 }
 
-func (mongo userRepository) Update(ctx context.Context, ID string, account model.AccountDto) (model.Account, error) {
-	objectId, err := primitive.ObjectIDFromHex(ID)
-	if err != nil {
-		return model.Account{}, err
-	}
-	filter := bson.D{primitive.E{Key: "_id", Value: objectId}}
-	itensForUpdate := bson.D{}
-
-	err = mongo.isDuplicateUser(ctx, account.Username)
-	if err != nil {
-		return model.Account{}, err
-	}
-
-	if account.Name != "" {
-		itensForUpdate = append(itensForUpdate, primitive.E{Key: "name", Value: account.Name})
-	}
-	if account.Username != "" {
-		itensForUpdate = append(itensForUpdate, primitive.E{Key: "username", Value: account.Username})
-	}
-	if account.LastName != "" {
-		itensForUpdate = append(itensForUpdate, primitive.E{Key: "lastName", Value: account.LastName})
-	}
+func (mongo AccountRepositoryImpl) Update(ctx context.Context, account model.Account) (model.Account, error) {
+	filter := bson.D{primitive.E{Key: "_id", Value: account.ID}}
 
 	upsert := true
 	after := options.After
@@ -116,21 +95,20 @@ func (mongo userRepository) Update(ctx context.Context, ID string, account model
 	}
 
 	bsonUpdate := bson.D{primitive.E{
-		Key: "$set", Value: itensForUpdate,
+		Key: "$set", Value: account,
 	}}
 
 	result := mongo.conn.FindOneAndUpdate(ctx, filter, bsonUpdate, &opt)
 
 	if result.Err() != nil {
-		fmt.Println(result)
-		return model.Account{}, err
+		return model.Account{}, result.Err()
 	}
 	var updatedAccount model.Account
 	decodeErr := result.Decode(&updatedAccount)
 	return updatedAccount, decodeErr
 }
 
-func (mongo userRepository) Delete(ctx context.Context, ID string) error {
+func (mongo AccountRepositoryImpl) Delete(ctx context.Context, ID string) error {
 	objectId, err := primitive.ObjectIDFromHex(ID)
 	filter := bson.D{primitive.E{Key: "_id", Value: objectId}}
 
@@ -141,7 +119,7 @@ func (mongo userRepository) Delete(ctx context.Context, ID string) error {
 	return nil
 }
 
-func (mongo userRepository) isDuplicateUser(ctx context.Context, username string) error {
+func (mongo AccountRepositoryImpl) isDuplicateUser(ctx context.Context, username string) error {
 	duplicatedUser := bson.D{primitive.E{Key: "username", Value: username}}
 	documents, err := mongo.conn.CountDocuments(ctx, duplicatedUser)
 	if err != nil {

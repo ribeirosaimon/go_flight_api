@@ -5,7 +5,6 @@ import (
 	"github.com/ribeirosaimon/go_flight_api/src/model"
 	"github.com/ribeirosaimon/go_flight_api/src/response"
 	"github.com/ribeirosaimon/go_flight_api/src/security"
-	"github.com/ribeirosaimon/go_flight_api/src/services"
 	"net/http"
 	"strings"
 )
@@ -14,36 +13,45 @@ const (
 	_BODY_LOGIN_ERROR = "body needs username and password"
 )
 
-func ControllerLogin(c *fiber.Ctx) error {
-	var user model.LoginDto
-	if err := c.BodyParser(&user); err != nil {
+type controllerLogin struct {
+	service serviceLogin
+}
+
+func ControllerLogin() controllerLogin {
+	return controllerLogin{service: ServiceLogin()}
+}
+
+func (s controllerLogin) Login(c *fiber.Ctx) error {
+	var account model.LoginDto
+	if err := c.BodyParser(&account); err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: _BODY_LOGIN_ERROR})
 	}
-	accessToken, err := services.UserLogin(user)
+
+	accessToken, err := s.service.UserLogin(account)
 	if err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
 	}
 	return c.Status(http.StatusOK).JSON(accessToken)
 }
 
-func SignUp(c *fiber.Ctx) error {
-	var user model.AccountDto
-	if err := c.BodyParser(&user); err != nil {
+func (s controllerLogin) SignUp(c *fiber.Ctx) error {
+	var account model.AccountDto
+	if err := c.BodyParser(&account); err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
 	}
-	if strings.Contains(user.Username, " ") {
+	if strings.Contains(account.Username, " ") {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: "your username contains space"})
 	}
 
-	if user.Username == "" {
+	if account.Username == "" {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: "you need send username"})
 	}
-	encriptedPassword, err := security.EncriptyPassword(user.Password)
+	encriptedPassword, err := security.EncriptyPassword(account.Password)
 	if err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
 	}
-	user.Password = string(encriptedPassword)
-	save, err := services.SaveOneAccount(user)
+	account.Password = string(encriptedPassword)
+	save, err := s.service.SaveOneAccount(account)
 	if err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
 	}

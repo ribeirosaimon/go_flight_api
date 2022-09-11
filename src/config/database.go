@@ -12,7 +12,7 @@ var mongoOnce sync.Once
 
 const (
 	CONNECTIONSTRING = "mongodb://localhost:27017"
-	DB               = "flight_api_v1"
+	DB               = "FlightApi_v1"
 )
 
 //GetMongoClient - Return mongodb connection to work with

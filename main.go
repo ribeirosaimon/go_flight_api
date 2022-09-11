@@ -8,19 +8,6 @@ import (
 
 func main() {
 
-	//var user = model.AccountDto{
-	//	Name:     "teste",
-	//	LastName: "teste",
-	//	Password: "pass",
-	//}
-	//
-	//service := services.UserService()
-	//account, err := service.SaveOneAccount(user)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//fmt.Println(account)
-
 	app := fiber.New()
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
