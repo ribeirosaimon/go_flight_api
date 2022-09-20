@@ -11,7 +11,7 @@ func main() {
 	app := fiber.New()
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
-		AllowHeaders: "Origin, Content-Type, Accept",
+		AllowHeaders: "Origin, Content-Type, Acceptn, Authorization",
 	}))
 
 	routes.AddApiRoutes(app)
