@@ -77,3 +77,8 @@ func ValidateLoggedUser(ctx *fiber.Ctx, searchId string) (model.LoggedUser, erro
 	}
 	return loggedUser, nil
 }
+
+func WhoIsMe(ctx *fiber.Ctx) model.LoggedUser {
+	val := ctx.Locals("loggedUser")
+	return val.(model.LoggedUser)
+}

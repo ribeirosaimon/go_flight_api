@@ -39,6 +39,11 @@ func (s userController) FindOneUserController(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(user.SanitizerAccount())
 }
 
+func (s userController) whoIsMe(c *fiber.Ctx) error {
+	loggedUser := login.WhoIsMe(c)
+	return c.Status(http.StatusOK).JSON(loggedUser)
+}
+
 func (s userController) UpdateUserController(c *fiber.Ctx) error {
 	id := fmt.Sprint(c.Params("id"))
 	_, err := login.ValidateLoggedUser(c, id)
