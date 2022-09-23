@@ -68,14 +68,10 @@ func (s serviceLogin) UserLogin(dto model.LoginDto) (model.UserAccessToken, erro
 	return accessToken, err
 }
 
-func ValidateLoggedUser(ctx *fiber.Ctx, searchId string) (model.LoggedUser, error) {
+func ValidateLoggedUser(ctx *fiber.Ctx) model.LoggedUser {
 	val := ctx.Locals("loggedUser")
 	loggedUser := val.(model.LoggedUser)
-
-	if loggedUser.UserId != searchId {
-		return model.LoggedUser{}, errors.New("you not have permission")
-	}
-	return loggedUser, nil
+	return loggedUser
 }
 
 func WhoIsMe(ctx *fiber.Ctx) model.LoggedUser {

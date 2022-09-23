@@ -28,9 +28,8 @@ func (s userController) FindAllController(c *fiber.Ctx) error {
 
 func (s userController) FindOneUserController(c *fiber.Ctx) error {
 	id := fmt.Sprint(c.Params("id"))
-	_, err := login.ValidateLoggedUser(c, id)
-	if err != nil {
-		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
+	if login.ValidateLoggedUser(c).UserId != id {
+		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: "You not have permission"})
 	}
 	user, err := s.userService.FindOneUserService(id)
 	if err != nil {
@@ -46,9 +45,8 @@ func (s userController) whoIsMe(c *fiber.Ctx) error {
 
 func (s userController) UpdateUserController(c *fiber.Ctx) error {
 	id := fmt.Sprint(c.Params("id"))
-	_, err := login.ValidateLoggedUser(c, id)
-	if err != nil {
-		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
+	if login.ValidateLoggedUser(c).UserId != id {
+		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: "You not have permission"})
 	}
 	var user model.AccountDto
 	if err := c.BodyParser(&user); err != nil {
@@ -63,11 +61,10 @@ func (s userController) UpdateUserController(c *fiber.Ctx) error {
 
 func (s userController) DeleteUserController(c *fiber.Ctx) error {
 	id := fmt.Sprint(c.Params("id"))
-	_, err := login.ValidateLoggedUser(c, id)
-	if err != nil {
-		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
+	if login.ValidateLoggedUser(c).UserId != id {
+		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: "You not have permission"})
 	}
-	err = s.userService.DeleteUserService(id)
+	err := s.userService.DeleteUserService(id)
 	if err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
 	}
@@ -76,9 +73,25 @@ func (s userController) DeleteUserController(c *fiber.Ctx) error {
 
 func (s userController) PromotedToAdmin(c *fiber.Ctx) error {
 	id := fmt.Sprint(c.Params("id"))
-	loggedUser, err := login.ValidateLoggedUser(c, id)
-	if err != nil {
-		return err
+	loggedUser := login.ValidateLoggedUser(c)
+	if loggedUser.UserId != id {
+		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: "You not have permission"})
 	}
-	return s.userService.promotedToAdmin(loggedUser, id)
+	if err := s.userService.promotedToAdmin(loggedUser, id); err != nil {
+		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
+	}
+	return c.SendStatus(http.StatusOK)
+}
+
+func (s userController) verifyPassword(c *fiber.Ctx) error {
+	var user model.Account
+	if err := c.BodyParser(&user); err != nil {
+		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
+	}
+	loggedUser := login.ValidateLoggedUser(c)
+	_, err := s.userService.verifyPassword(loggedUser, user)
+	if err != nil {
+		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
+	}
+	return c.SendStatus(http.StatusOK)
 }

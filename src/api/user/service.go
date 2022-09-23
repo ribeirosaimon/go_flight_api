@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"fmt"
 	"github.com/pkg/errors"
 	"github.com/ribeirosaimon/go_flight_api/src/model"
 	"github.com/ribeirosaimon/go_flight_api/src/repository"
@@ -96,12 +95,27 @@ func (s userService) promotedToAdmin(loggedUser model.LoggedUser, id string) err
 
 	userDb.Roles = append(userDb.Roles, model.ADMIN)
 
-	teste, err := repository.NewMongoRepository().Account.Update(ctx, userDb)
+	_, err = repository.NewMongoRepository().Account.Update(ctx, userDb)
 
-	fmt.Println(teste)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (s userService) verifyPassword(loggedUser model.LoggedUser, user model.Account) (bool, error) {
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	defer cancelFunc()
+
+	foundUser, err := s.repository.FindById(ctx, loggedUser.UserId)
+
+	if err != nil {
+		return false, err
+	}
+
+	if err := security.VerifyPassword(foundUser.Password, user.Password); err != nil {
+		return false, err
+	}
+	return true, err
 }
