@@ -78,7 +78,7 @@ func (mongo AccountRepositoryImpl) FindAll(ctx context.Context) ([]model.Account
 		if err := find.Decode(&account); err != nil {
 			return allResults, err
 		}
-		allResults = append(allResults, account)
+		allResults = append(allResults, account.SanitizerAccount())
 	}
 
 	return allResults, nil

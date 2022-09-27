@@ -85,9 +85,6 @@ func (s userService) promotedToAdmin(loggedUser model.LoggedUser, id string) err
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	defer cancelFunc()
 
-	if loggedUser.UserId != id {
-		return errors.New("you not have permision")
-	}
 	userDb, err := s.repository.FindById(ctx, id)
 	if err != nil {
 		return err

@@ -14,5 +14,5 @@ func UserRoutes(apiHandlers fiber.Router) {
 	apiHandlers.Get("/:id", middlewares.UserPermission, UserControler().FindOneUserController)
 	apiHandlers.Put("/:id", middlewares.UserPermission, UserControler().UpdateUserController)
 	apiHandlers.Delete("/:id", middlewares.UserPermission, UserControler().DeleteUserController)
-	apiHandlers.Post("/:id/promoted", middlewares.UserPermission, UserControler().PromotedToAdmin)
+	apiHandlers.Post("/:id/promoted", middlewares.AdminPermission, UserControler().PromotedToAdmin)
 }

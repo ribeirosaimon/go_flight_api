@@ -74,9 +74,6 @@ func (s userController) DeleteUserController(c *fiber.Ctx) error {
 func (s userController) PromotedToAdmin(c *fiber.Ctx) error {
 	id := fmt.Sprint(c.Params("id"))
 	loggedUser := login.ValidateLoggedUser(c)
-	if loggedUser.UserId != id {
-		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: "You not have permission"})
-	}
 	if err := s.userService.promotedToAdmin(loggedUser, id); err != nil {
 		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
 	}
