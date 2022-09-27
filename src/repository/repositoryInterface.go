@@ -5,7 +5,7 @@ import (
 	"github.com/ribeirosaimon/go_flight_api/src/model"
 )
 
-type mongoRepository interface {
+type accountRepository interface {
 	Save(ctx context.Context, account model.Account) (model.Account, error)
 	FindById(ctx context.Context, ID string) (model.Account, error)
 	FindByUsername(ctx context.Context, username string) (model.Account, error)

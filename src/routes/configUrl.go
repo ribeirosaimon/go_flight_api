@@ -3,7 +3,7 @@ package routes
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/swagger"
-	"github.com/ribeirosaimon/go_flight_api/src/controllers/config"
+	"github.com/ribeirosaimon/go_flight_api/src/api/config"
 )
 
 func ConfigureApi(apiHandlers fiber.Router) {

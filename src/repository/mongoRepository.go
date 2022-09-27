@@ -1,9 +1,13 @@
 package repository
 
 type container struct {
-	Account mongoRepository
+	Account AccountRepositoryImpl
+	Flight  FlightRepositoryImpl
 }
 
 func NewMongoRepository() *container {
-	return &container{Account: newUserRepository()}
+	return &container{
+		Account: UserRepository(),
+		Flight:  FlightRepository(),
+	}
 }
