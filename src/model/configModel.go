@@ -5,4 +5,5 @@ import "time"
 type ConfigApiModel struct {
 	Read        bool      `json:"read"`
 	CurrentTime time.Time `json:"current_time"`
+	IsLoading   bool      `json:"isLoading"`
 }
