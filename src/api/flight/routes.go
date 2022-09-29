@@ -11,6 +11,7 @@ func FlightRoutes(apiHandlers fiber.Router) {
 	apiHandlers.Get("", middlewares.AdminPermission, Controller().FindAllController)
 	apiHandlers.Post("", middlewares.UserPermission, Controller().SaveFlightController)
 	apiHandlers.Get("/cheap", middlewares.UserPermission, Controller().CheapFlight)
+	apiHandlers.Get("/last-flight", middlewares.UserPermission, Controller().GetLastFlight)
 	apiHandlers.Get("/:id", middlewares.UserPermission, Controller().FindOneFlightController)
 	apiHandlers.Delete("/:id", middlewares.AdminPermission, Controller().DeleteFlightController)
 }

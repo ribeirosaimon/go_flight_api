@@ -61,3 +61,11 @@ func (s flightController) CheapFlight(c *fiber.Ctx) error {
 	}
 	return c.Status(http.StatusOK).JSON(cheapFlight)
 }
+
+func (s flightController) GetLastFlight(c *fiber.Ctx) error {
+	cheapFlight, err := s.flightService.getLastFlight()
+	if err != nil {
+		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
+	}
+	return c.Status(http.StatusOK).JSON(cheapFlight)
+}

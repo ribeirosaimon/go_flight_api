@@ -90,3 +90,14 @@ func (mongo FlightRepositoryImpl) FindMoreCheapFlight(ctx context.Context) (mode
 	}
 	return result, nil
 }
+
+func (mongo FlightRepositoryImpl) GetLastFlight(ctx context.Context) (model.Flight, error) {
+	filter := bson.D{}
+	opts := options.FindOne().SetSort(bson.D{{"createdAt", -1}})
+
+	result := model.Flight{}
+	if err := mongo.conn.FindOne(ctx, filter, opts).Decode(&result); err != nil {
+		return result, err
+	}
+	return result, nil
+}

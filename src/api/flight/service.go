@@ -69,3 +69,10 @@ func (s flightService) deleteById(id string) error {
 
 	return s.repository.DeleteById(ctx, id)
 }
+
+func (s flightService) getLastFlight() (model.Flight, error) {
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	defer cancelFunc()
+
+	return s.repository.GetLastFlight(ctx)
+}
