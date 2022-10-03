@@ -69,3 +69,16 @@ func (s flightController) GetLastFlight(c *fiber.Ctx) error {
 	}
 	return c.Status(http.StatusOK).JSON(cheapFlight)
 }
+
+func (s flightController) SearchFlight(c *fiber.Ctx) error {
+	var searchFilter model.SearchFilter
+	if err := c.BodyParser(&searchFilter); err != nil {
+		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
+	}
+
+	cheapFlight, err := s.flightService.searchFlight(searchFilter)
+	if err != nil {
+		return c.Status(http.StatusConflict).JSON(response.ErrorResponse{Message: err.Error()})
+	}
+	return c.Status(http.StatusOK).JSON(cheapFlight)
+}

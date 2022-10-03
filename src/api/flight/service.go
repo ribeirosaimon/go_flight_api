@@ -76,3 +76,10 @@ func (s flightService) getLastFlight() (model.Flight, error) {
 
 	return s.repository.GetLastFlight(ctx)
 }
+
+func (s flightService) searchFlight(search model.SearchFilter) (model.SearchFilterResult, error) {
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	defer cancelFunc()
+
+	return s.repository.SearchFlight(ctx, search)
+}

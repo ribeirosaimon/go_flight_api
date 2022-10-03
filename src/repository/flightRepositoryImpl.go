@@ -45,8 +45,9 @@ func (mongo FlightRepositoryImpl) FindById(ctx context.Context, id string) (mode
 func (mongo FlightRepositoryImpl) FindAll(ctx context.Context) ([]model.Flight, error) {
 	var result []model.Flight
 	filter := bson.D{{}}
+	opts := options.Find().SetSort(bson.D{{"createdAt", -1}})
 
-	allFlights, err := mongo.conn.Find(ctx, filter)
+	allFlights, err := mongo.conn.Find(ctx, filter, opts)
 	defer allFlights.Close(ctx)
 
 	if err != nil {
@@ -100,4 +101,43 @@ func (mongo FlightRepositoryImpl) GetLastFlight(ctx context.Context) (model.Flig
 		return result, err
 	}
 	return result, nil
+}
+
+func (mongo FlightRepositoryImpl) SearchFlight(ctx context.Context, search model.SearchFilter) (model.SearchFilterResult, error) {
+	mongoFilter := bson.D{}
+	for _, filter := range search.Filters {
+		mongoFilter = append(mongoFilter, bson.E{Key: filter.Key, Value: filter.Value})
+	}
+
+	if search.Page == 0 {
+		search.Page = 1
+	}
+
+	opts := options.Find().
+		SetSort(bson.D{{"createdAt", -1}}).
+		SetSkip(int64(search.Page - 1)).
+		SetLimit(int64(search.PageSize))
+
+	searchFlight, err := mongo.conn.Find(ctx, mongoFilter, opts)
+	defer searchFlight.Close(ctx)
+	if err != nil {
+		return model.SearchFilterResult{}, err
+	}
+
+	var searchResult model.SearchFilterResult
+
+	for searchFlight.Next(ctx) {
+		var flight model.Flight
+		if err := searchFlight.Decode(&flight); err != nil {
+			return model.SearchFilterResult{}, err
+		}
+		searchResult.Result = append(searchResult.Result, flight)
+	}
+	documents, err := mongo.conn.CountDocuments(ctx, mongoFilter)
+	if err != nil {
+		return model.SearchFilterResult{}, err
+	}
+
+	searchResult.Count = uint32(documents)
+	return searchResult, nil
 }
